@@ -59,15 +59,24 @@ Apache-2.0
 3. Run `pip install -r requirements.txt`
 4. Launch Jupyter with `jupyter notebook --ip=0.0.0.0 --port=8888`
 
-### 📊 Example Recommendation Output
+### 🎞️ App Preview
 
-```json
-{
-  "user_id": 42,
-  "recommendations": [
-    {"movie_id": 50, "predicted_rating": 4.23, "title": "The Usual Suspects"},
-    {"movie_id": 318, "predicted_rating": 4.18, "title": "Shawshank Redemption"},
-    {"movie_id": 527, "predicted_rating": 4.15, "title": "Schindler's List"}
-  ]
-}
+**Personalized Movie Recommendations with Modern UI**
+
+The web app features a clean, responsive interface built with Next.js and Tailwind CSS:
+
+- **🎭 Home Dashboard**: Browse trending movies with TMDB posters and ratings
+- **🤖 Smart Recommendations**: Get personalized suggestions based on your viewing history
+- **🔍 Search & Filter**: Find movies by genre, year, or rating
+- **🎨 Movie Cards**: Beautiful cards showing poster, title, rating, and ML confidence score
+- **📊 Stats Dashboard**: Visualize your taste profile and model predictions
+
+**Tech Stack UI**:
 ```
+Frontend: Next.js 14 + Tailwind CSS + Framer Motion
+Backend API: FastAPI + Uvicorn
+ML Engine: Scikit-surprise (CF) + PyTorch (Embeddings)
+Data Source: TMDB API (Live movie metadata + posters)
+```
+
+*Note: Screenshots coming soon after Week 4 deployment* 🚀
