@@ -1,0 +1,5 @@
+Model: Collaborative Filtering (SVD)
+Dataset: MovieLens 100k
+RMSE: 0.87
+Date: 2025-11-12
+Notes: Baseline model for hybrid recommender. This model will be enhanced with deep learning embeddings in Week 3.
