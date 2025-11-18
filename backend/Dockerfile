@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application code
 COPY ./backend /app/backend
-COPY ./models /app/models
+# COPY ./models /app/models
 
 # Create directory for model files
 RUN mkdir -p /app/models
