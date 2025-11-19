@@ -1,4 +1,4 @@
-# 🎬 Movie Recommender Web App (ML + Full Stack)
+# 🎬 Movie Recommender Web App (ML + Full Stack) 
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-Apache--2.0-yellow)
