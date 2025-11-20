@@ -1,15 +1,10 @@
 import os
+import requests
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-
-# Import from the nested backend package
-# Assuming running from root as: uvicorn backend.app:app
-from backend.backend.user_history import UserHistoryManager, PersonalizedRecommender
-from backend.backend.tmdb_recommender import TMDBFusion, HybridRecommender
-from backend.backend.explainable_recommender import ExplainableRecommender
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +15,7 @@ app = FastAPI(title="Movie Recommender API")
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://mruhan17.github.io",
 ]
 
 app.add_middleware(
@@ -30,37 +26,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Components
-# Ensure models directory exists for any local models
-os.makedirs("models", exist_ok=True)
-
 # Get API Key
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 if not TMDB_API_KEY:
-    print("WARNING: TMDB_API_KEY not found in environment variables.")
+    print("WARNING: TMDB_API_KEY not found in environment variables")
 
-# Initialize Managers
-# We use a singleton pattern-like approach here for simplicity
-history_manager = UserHistoryManager()
-tmdb_fusion = TMDBFusion(api_key=TMDB_API_KEY)
-personalized_recommender = PersonalizedRecommender(history_manager)
-hybrid_recommender = HybridRecommender(tmdb_fusion, personalized_recommender)
-explainable_recommender = ExplainableRecommender(history_manager, tmdb_fusion)
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
 
-# --- Pydantic Models ---
-
+# Pydantic Models
 class MovieAction(BaseModel):
     movie_id: int
     title: str
     genres: List[str]
-    rating: Optional[float] = None
+    rating: float
 
 class UserProfile(BaseModel):
     user_id: str
+    watched: List[MovieAction] = []
+    liked: List[MovieAction] = []
 
-# --- Endpoints ---
+# Helper functions
+def get_tmdb_data(endpoint: str, params: dict = None):
+    """Fetch data from TMDB API"""
+    if not TMDB_API_KEY:
+        raise HTTPException(status_code=500, detail="TMDB API key not configured")
+    
+    params = params or {}
+    params["api_key"] = TMDB_API_KEY
+    
+    response = requests.get(f"{TMDB_BASE_URL}{endpoint}", params=params)
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="TMDB API error")
+    
+    return response.json()
 
-@app.get("/health")
+@app.get("/")
+async def root():
+    return {"message": "Movie Recommender API", "status": "running"}
+
+@app.get("/health_check")
 async def health_check():
     return {"status": "healthy"}
 
@@ -68,7 +72,8 @@ async def health_check():
 async def get_trending(page: int = 1):
     """Get trending movies from TMDB"""
     try:
-        return hybrid_recommender._get_trending_movies(page=page)
+        data = get_tmdb_data("/trending/movie/week", {"page": page})
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -76,77 +81,44 @@ async def get_trending(page: int = 1):
 async def search_movies(query: str, page: int = 1):
     """Search for movies"""
     try:
-        return tmdb_fusion.search_movies(query, page=page)
+        data = get_tmdb_data("/search/movie", {"query": query, "page": page})
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/recommendations/{user_id}")
 async def get_recommendations(user_id: str, top_n: int = 10):
-    """Get personalized recommendations"""
+    """Get personalized recommendations (simplified - returns popular movies)"""
     try:
-        return hybrid_recommender.get_smart_recommendations(user_id, top_n=top_n)
+        # For now, return popular movies as recommendations
+        data = get_tmdb_data("/movie/popular", {"page": 1})
+        results = data.get("results", [])[:top_n]
+        return {"recommendations": results, "method": "popular"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/explain/{user_id}/{movie_id}")
 async def explain_recommendation(user_id: str, movie_id: int):
-    """Explain why a movie was recommended"""
+    """Explain why a movie is recommended (simplified)"""
     try:
-        # We need movie details to explain. 
-        # In a real app, we might pass the movie object or fetch it.
-        # Here we fetch it from TMDB.
-        movie_details = tmdb_fusion.get_movie_details(movie_id)
-        if not movie_details:
-            raise HTTPException(status_code=404, detail="Movie not found")
+        # Get movie details
+        movie_data = get_tmdb_data(f"/movie/{movie_id}")
         
-        # Enrich it to match the format expected by explainer
-        enriched_movie = tmdb_fusion.enrich_movie_data(movie_details)
-        
-        explanation = explainable_recommender.explain_recommendation(user_id, enriched_movie)
-        return explanation
+        return {
+            "movie_id": movie_id,
+            "title": movie_data.get("title"),
+            "explanation": "This movie is popular and highly rated.",
+            "genres": [g["name"] for g in movie_data.get("genres", [])],
+            "rating": movie_data.get("vote_average"),
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/user/{user_id}/history")
-async def get_history(user_id: str):
-    """Get user watch history"""
-    return history_manager.get_watch_history(user_id)
+@app.post("/api/history/add")
+async def add_to_history(action: MovieAction):
+    """Add movie to user history (simplified - just returns success)"""
+    return {"status": "success", "message": "History tracking coming soon"}
 
-@app.post("/api/user/{user_id}/history")
-async def add_to_history(user_id: str, action: MovieAction):
-    """Add movie to watch history"""
-    history_manager.add_to_history(
-        user_id, 
-        action.movie_id, 
-        action.title, 
-        action.genres, 
-        action.rating
-    )
-    return {"status": "success"}
-
-@app.get("/api/user/{user_id}/likes")
-async def get_likes(user_id: str):
-    """Get user liked movies"""
-    return history_manager.get_liked_movies(user_id)
-
-@app.post("/api/user/{user_id}/likes")
-async def add_like(user_id: str, action: MovieAction):
-    """Add movie to likes"""
-    history_manager.add_like(
-        user_id, 
-        action.movie_id, 
-        action.title, 
-        action.genres
-    )
-    return {"status": "success"}
-
-@app.delete("/api/user/{user_id}/likes/{movie_id}")
-async def remove_like(user_id: str, movie_id: int):
-    """Remove movie from likes"""
-    history_manager.remove_like(user_id, movie_id)
-    return {"status": "success"}
-
-@app.get("/api/user/{user_id}/profile")
-async def get_profile(user_id: str):
-    """Get full user profile"""
-    return history_manager.get_user_profile(user_id)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
