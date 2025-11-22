@@ -16,6 +16,7 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://mruhan17.github.io",
+        "https://movie-recommender-mruhan17.vercel.app",
 ]
 
 app.add_middleware(
