@@ -1,4 +1,4 @@
-from backend.app import app
+from backend.app import app  # noqa: F401
 
 if __name__ == "__main__":
     import uvicorn
