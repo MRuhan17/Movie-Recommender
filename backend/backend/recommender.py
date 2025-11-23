@@ -5,7 +5,7 @@ Combines collaborative filtering with sentiment scores from TMDB reviews.
 
 import numpy as np
 from typing import List, Dict, Optional
-from sentiment import get_sentiment_features
+from .sentiment import get_sentiment_features
 
 
 class HybridRecommender:

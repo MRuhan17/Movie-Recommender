@@ -19,7 +19,7 @@ services:
       - app-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health_check')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -30,14 +30,7 @@ services:
       dockerfile: Dockerfile
     container_name: movie-recommender-frontend
     ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://backend:8000
-      - NEXT_PUBLIC_TMDB_API_KEY=${TMDB_API_KEY}
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - "3000:80"
     networks:
       - app-network
     depends_on:

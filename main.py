@@ -1,4 +1,4 @@
-from backend.app import app
+from backend.app import app  # Import used by uvicorn in deployment
 
 if __name__ == "__main__":
     import uvicorn

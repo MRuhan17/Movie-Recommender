@@ -237,7 +237,7 @@ class HybridRecommender:
 
 # Example usage
 if __name__ == "__main__":
-    from user_history import UserHistoryManager, PersonalizedRecommender
+    from .user_history import UserHistoryManager, PersonalizedRecommender
     
     # Initialize components
     tmdb = TMDBFusion(api_key="your_api_key")
