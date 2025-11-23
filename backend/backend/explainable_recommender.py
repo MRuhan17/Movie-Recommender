@@ -284,8 +284,8 @@ class ExplainableRecommender:
 
 # Example usage
 if __name__ == "__main__":
-    from user_history import UserHistoryManager
-    from tmdb_recommender import TMDBFusion
+    from .user_history import UserHistoryManager
+    from .tmdb_recommender import TMDBFusion
     
     # Initialize
     history_mgr = UserHistoryManager()
