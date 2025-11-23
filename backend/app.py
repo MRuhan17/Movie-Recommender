@@ -95,6 +95,18 @@ async def search_movies(query: str, page: int = 1):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/recommendations/default")
+async def get_default_recommendations(top_n: int = 10):
+    """Get default recommendations for anonymous users"""
+    try:
+        # Return popular movies as default recommendations
+        data = get_tmdb_data("/movie/popular", {"page": 1})
+        results = data.get("results", [])[:top_n]
+        return {"recommendations": results, "method": "popular"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/recommendations/{user_id}")
 async def get_recommendations(user_id: str, top_n: int = 10):
     """Get personalized recommendations (simplified - returns popular movies)"""
