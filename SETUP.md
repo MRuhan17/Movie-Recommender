@@ -68,7 +68,7 @@ The backend will automatically detect the API key and use real TMDB data!
 - **Trending Movies**: See what's popular right now
 - **Top Rated**: Discover critically acclaimed films
 - **Recommendations**: Get personalized movie suggestions
-- **Search**: Find specific movies (works with real TMDB API)
+- **Search**: Find specific movies (with mock data, returns the same movies for any query; for full search, use a real TMDB API key)
 - **Movie Details**: Click any movie to see full details
 
 ## Deployment
