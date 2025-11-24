@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trigger Render Deploy Hook
-        if: secrets.RENDER_DEPLOY_HOOK_URL != ''
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
         run: |
           if curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"; then
             echo "✅ Backend deployment triggered on Render"
@@ -32,7 +32,7 @@ jobs:
           fi
 
       - name: Skip Render deployment (no hook configured)
-        if: secrets.RENDER_DEPLOY_HOOK_URL == ''
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL == '' }}
         run: |
           echo "⚠️ RENDER_DEPLOY_HOOK_URL not configured. Skipping backend deployment."
           echo "To enable automated deployment to Render:"
@@ -62,22 +62,20 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        if: secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != ''
+        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != '' }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
-        if: secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != ''
-        env:
+      if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != '' }}        env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
-        if: secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != ''
-        env:
+      if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != '' }}        env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
