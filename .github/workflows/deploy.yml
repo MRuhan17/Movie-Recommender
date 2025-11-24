@@ -22,8 +22,12 @@ jobs:
       - name: Trigger Render Deploy Hook
         if: secrets.RENDER_DEPLOY_HOOK_URL != ''
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
-          echo "✅ Backend deployment triggered on Render"
+          if curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"; then
+            echo "✅ Backend deployment triggered on Render"
+          else
+            echo "❌ Failed to trigger Render deployment"
+            exit 1
+          fi
 
       - name: Skip Render deployment (no hook configured)
         if: secrets.RENDER_DEPLOY_HOOK_URL == ''
