@@ -2,6 +2,32 @@
 
 This guide covers how to deploy the Movie Recommender application on various platforms.
 
+## Automated Deployment (Recommended)
+
+The repository is configured with GitHub Actions for automated deployment when PRs are merged to the main branch.
+
+### Setup Automated Deployment
+
+1. **Render Backend Deployment**:
+   - Go to your [Render Dashboard](https://dashboard.render.com/)
+   - Select your service (or create one following the manual steps below)
+   - Go to Settings → Deploy Hook
+   - Copy the deploy hook URL
+   - Add it as a GitHub secret named `RENDER_DEPLOY_HOOK_URL`
+
+2. **Vercel Frontend Deployment**:
+   - Install Vercel CLI: `npm i -g vercel`
+   - Login: `vercel login`
+   - Link project: `vercel link` (in the project directory)
+   - Create a token: `vercel token create`
+   - Get your project settings from `.vercel/project.json`
+   - Add these as GitHub secrets:
+     - `VERCEL_TOKEN`
+     - `VERCEL_ORG_ID`
+     - `VERCEL_PROJECT_ID`
+
+After configuration, every merged PR will automatically trigger deployment to both Render and Vercel.
+
 ## Prerequisites
 
 Before deploying, make sure you have:
@@ -158,11 +184,14 @@ const API_URL = 'https://your-backend.onrender.com/api';
 
 ## Updates
 
-To update your deployment:
+### With Automated Deployment (GitHub Actions)
 
-1. Make changes to your code
-2. Commit and push to GitHub
-3. Render/Vercel will automatically redeploy (if auto-deploy is enabled)
+1. Create a branch and make your changes
+2. Create a Pull Request
+3. Once the PR is reviewed and merged to main, deployment happens automatically
+4. Monitor the deployment in the "Actions" tab of your GitHub repository
+
+### Manual Deployment
 
 Or manually redeploy:
 ```bash
@@ -172,6 +201,17 @@ git push origin main
 # Vercel
 vercel --prod
 ```
+
+## GitHub Actions Workflow
+
+The repository includes a `.github/workflows/deploy.yml` file that:
+- Triggers on push to main branch
+- Triggers when PRs are merged to main
+- Deploys backend to Render using a deploy hook
+- Deploys frontend to Vercel using Vercel CLI
+- Reports deployment status
+
+To view deployment logs, go to the "Actions" tab in your GitHub repository.
 
 ## Support
 

@@ -1,0 +1,114 @@
+name: Deploy to Render and Vercel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend to Render
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Render Deploy Hook
+        if: secrets.RENDER_DEPLOY_HOOK_URL != ''
+        run: |
+          if curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"; then
+            echo "✅ Backend deployment triggered on Render"
+          else
+            echo "❌ Failed to trigger Render deployment"
+            exit 1
+          fi
+
+      - name: Skip Render deployment (no hook configured)
+        if: secrets.RENDER_DEPLOY_HOOK_URL == ''
+        run: |
+          echo "⚠️ RENDER_DEPLOY_HOOK_URL not configured. Skipping backend deployment."
+          echo "To enable automated deployment to Render:"
+          echo "1. Go to your Render dashboard"
+          echo "2. Select your service"
+          echo "3. Go to Settings → Deploy Hook"
+          echo "4. Copy the deploy hook URL"
+          echo "5. Add it as a secret named RENDER_DEPLOY_HOOK_URL in GitHub repository settings"
+
+  deploy-frontend:
+    name: Deploy Frontend to Vercel
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        if: secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != ''
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        if: secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != ''
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        if: secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != ''
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+          echo "✅ Frontend deployed to Vercel"
+
+      - name: Skip Vercel deployment (secrets not configured)
+        if: secrets.VERCEL_TOKEN == '' || secrets.VERCEL_ORG_ID == '' || secrets.VERCEL_PROJECT_ID == ''
+        run: |
+          echo "⚠️ Vercel secrets not configured. Skipping frontend deployment."
+          echo "To enable automated deployment to Vercel:"
+          echo "1. Install Vercel CLI: npm i -g vercel"
+          echo "2. Run: vercel login"
+          echo "3. Link project: vercel link"
+          echo "4. Get tokens from .vercel/project.json"
+          echo "5. Add these secrets to GitHub repository:"
+          echo "   - VERCEL_TOKEN (from vercel token create)"
+          echo "   - VERCEL_ORG_ID"
+          echo "   - VERCEL_PROJECT_ID"
+
+  deployment-status:
+    name: Report Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: always() && (needs.deploy-backend.result != 'skipped' || needs.deploy-frontend.result != 'skipped')
+    permissions:
+      contents: none
+    
+    steps:
+      - name: Check deployment results
+        run: |
+          echo "🚀 Deployment workflow completed"
+          echo "Backend deployment: ${{ needs.deploy-backend.result }}"
+          echo "Frontend deployment: ${{ needs.deploy-frontend.result }}"
