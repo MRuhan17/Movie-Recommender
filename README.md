@@ -3,6 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-Apache--2.0-yellow)
 ![Platform](https://img.shields.io/badge/Platform-GitHub%20Codespaces-lightgrey)
+![Deploy](https://github.com/MRuhan17/Movie-Recommender/actions/workflows/deploy.yml/badge.svg)
 
 A full-stack movie recommender system combining Collaborative Filtering (SVD) and Deep Learning embeddings.
 Developed in GitHub Codespaces, integrated with the TMDB API for real-world movie metadata.
@@ -49,6 +50,15 @@ pip install -r requirements.txt
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
+
+### 🚀 Deployment
+
+This project includes automated deployment via GitHub Actions:
+
+- **Backend**: Automatically deploys to Render when PRs are merged to main
+- **Frontend**: Automatically deploys to Vercel when PRs are merged to main
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions and configuration.
 
 ### 📝 License
 Apache-2.0
