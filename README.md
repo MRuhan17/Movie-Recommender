@@ -4,12 +4,9 @@ Hybrid ML Recommender System | FastAPI Backend | Next.js Frontend | Deployed on 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-Apache--2.0-yellow)
 ![Platform](https://img.shields.io/badge/Codespaces-Ready-lightgrey)
-![Deploy](https://github.com/MRuhan17/Movie-Recommender/actions/workflows/deploy.yml/badge.svg)
 
 A production-ready full-stack movie recommendation system built using a hybrid ML engine combining Collaborative Filtering (SVD) and Semantic Embeddings.  
 The system retrieves real-time movie metadata using the TMDB API and serves a clean, fast UI through a modern Next.js frontend.
-
-This project demonstrates ML engineering, API design, full-stack development, and deployment automation.
 
 ---
 
@@ -20,51 +17,44 @@ https://movie-recommender-7yjq9f4rt-mruhan17s-projects.vercel.app/
 ---
 
 # 🧠 Core Features
-
-Hybrid ML Recommendation Engine  
-- SVD-based Collaborative Filtering  
-- Sentence-Transformer embedding similarity  
-- Weighted hybrid scoring for improved accuracy and diversity  
-
-Real-time Movie Metadata  
-- TMDB API for posters, descriptions, genres, and ratings  
-- Fallback logic when metadata is missing  
-
-Full-Stack Implementation  
-- FastAPI backend  
-- Next.js 14 frontend with Tailwind  
-- Deployed using Docker, Render, and Vercel  
-- Fast, responsive UI
+- Hybrid ML engine (SVD CF + Sentence-Transformers Embeddings)  
+- Real-time movie metadata via TMDB API  
+- Clean FastAPI backend architecture  
+- Modern Next.js 14 frontend with Tailwind  
+- Fully responsive UI with smooth animations  
 
 ---
 
 # 🧩 Architecture Overview
 
+```
                      ┌───────────────────────────┐
                      │        Frontend (Next.js) │
-                     │  UI, Movie Cards, Routing │
+                     │     UI, Movie Cards, UX   │
                      └──────────────┬────────────┘
                                     │
-                             HTTP (fetch)
+                             HTTP Requests
                                     │
                  ┌──────────────────▼──────────────────┐
-                 │         FastAPI Backend             │
-                 │  /recommend, /movie, /search routes │
+                 │            FastAPI Backend          │
+                 │   /recommend   /movie   /search     │
                  └──────────────┬──────────────────────┘
                                 │
    ┌────────────────────────────┼────────────────────────────┐
    │                            │                            │
-┌──▼───┐                  ┌─────▼─────┐                ┌─────▼─────┐
-│ CF   │                  │ Embedding │                │ TMDB API   │
-│ Model│                  │ Model     │                │ Metadata   │
-└──────┘                  └───────────┘                └────────────┘
-   │                            │                            │
-   └─────── Hybrid Fusion Engine ────────────────► Final Movie List
+┌──▼────────┐             ┌─────▼────────┐            ┌──────▼─────┐
+│ CF Model  │             │ Embedding    │            │ TMDB API    │
+│  (SVD)    │             │ Model (ST)   │            │  Metadata   │
+└───────────┘             └──────────────┘            └─────────────┘
+       │                         │                           │
+       └───────────── Hybrid Fusion Engine ───────────────► Final Movie List
+```
 
 ---
 
 # 🗂️ Project Structure
 
+```
 movie-recommender/
 │
 ├── backend/
@@ -93,12 +83,13 @@ movie-recommender/
 ├── DEPLOYMENT.md
 ├── LICENSE
 └── requirements.txt
+```
 
 ---
 
 # ⚙️ Technology Stack
 
-Backend  
+### Backend
 - Python 3.11  
 - FastAPI + Uvicorn  
 - Scikit-Surprise (SVD)  
@@ -106,76 +97,81 @@ Backend
 - TMDB API  
 - Pydantic  
 
-Frontend  
+### Frontend
 - Next.js 14  
 - Tailwind CSS  
 - Framer Motion  
-- Fully responsive components  
+- Responsive and fast movie browsing UI  
 
-Deployment & Infra  
+### Deployment & Infra
 - Vercel (Frontend)  
-- Render / Docker (Backend)  
-- GitHub Actions CI  
+- Docker + Render (Backend)  
 - GitHub Codespaces  
+- Clean project structure for portability  
 
 ---
 
 # 🧬 Machine Learning Logic
 
-Collaborative Filtering (CF)  
+### Collaborative Filtering (CF)
 - SVD model trained on MovieLens dataset  
-- Learns user–item preference matrix  
-- Ideal for preference prediction  
+- Learns latent user–item preference patterns  
 
-Embedding Similarity  
+### Embedding Similarity
 - Sentence-Transformer embeddings  
-- Cosine similarity scores  
-- Helps when CF has sparse data  
+- Cosine similarity for semantic closeness  
 
-Hybrid Fusion  
+### Hybrid Fusion
+```
 final_score = 0.6 * CF_score + 0.4 * Embedding_score
+```
 
 ---
 
 # 🚀 Running Locally
 
-Backend  
-1. cd backend  
-2. python -m venv venv  
-3. source venv/bin/activate   (Windows: venv\Scripts\activate)  
-4. pip install -r requirements.txt  
-5. uvicorn app:app --reload  
+### Backend
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app:app --reload
+```
 
-Frontend  
-1. cd frontend  
-2. npm install  
-3. npm run dev  
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Environment Variables  
+### Environment Variables
 Create `.env`:
 
+```
+TMDB_API_KEY=your_key_here
+```
 
 ---
 
-# 🔄 Deployment Pipeline (CI/CD)
-
-- GitHub Actions runs builds and project checks on each push  
-- Frontend auto-deploys to Vercel  
+# 🔄 Deployment Pipeline
+- GitHub Actions performs project checks  
+- Frontend automatically deploys to Vercel  
 - Backend deploys via Docker (Render)  
-- Ensures reproducible builds and stable releases  
+- Ensures consistent, reproducible releases  
 
 ---
 
 # 🎨 UI Preview
+The UI includes:
+- Clean, modern layout  
+- Movie cards with poster, rating, genres  
+- Instant recommendations  
+- Smooth animations using Framer Motion  
+- Mobile-responsive design  
 
-The app includes:  
-- Clean, modern UI  
-- Movie cards with posters, ratings, and genres  
-- Real-time recommendations  
-- Smooth animations via Framer Motion  
-- Fully mobile-responsive design  
-
-
+(Add screenshots here if needed.)
 
 ---
 
@@ -185,5 +181,5 @@ Apache 2.0
 ---
 
 # 📡 Production Deployment
-The application is deployed on Vercel.  
-TMDB_API_KEY is configured in Vercel Environment Variables.
+The application is deployed on **Vercel**.  
+TMDB_API_KEY is configured in Vercel Project Settings.
