@@ -4,9 +4,17 @@
     {
       "src": "frontend/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "main.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/main.py"
+    },
     {
       "src": "/(.*)",
       "dest": "/frontend/$1"
