@@ -181,6 +181,17 @@ async def health_check():
     return {"status": "healthy"}
 
 
+@app.get("/api/debug")
+async def debug_status():
+    """Check if API key is configured"""
+    return {
+        "use_mock_data": USE_MOCK_DATA,
+        "api_key_found": bool(TMDB_API_KEY),
+        "api_key_length": len(TMDB_API_KEY) if TMDB_API_KEY else 0,
+        "env_vars": list(os.environ.keys())
+    }
+
+
 @app.get("/api/movies/trending")
 async def get_trending(page: int = 1):
     """Get trending movies from TMDB"""
