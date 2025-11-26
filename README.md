@@ -90,3 +90,6 @@ Data Source: TMDB API (Live movie metadata + posters)
 ```
 
 *Note: Screenshots coming soon after Week 4 deployment* 🚀
+
+### 🌐 Vercel Deployment
+The application is deployed on Vercel. Ensure `TMDB_API_KEY` is set in the project settings for full functionality.
