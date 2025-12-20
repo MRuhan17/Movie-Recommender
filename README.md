@@ -1,95 +1,68 @@
-# 🎬 Movie Recommender Web App (ML + Full Stack) 
+# Production Movie Recommender Backend
 
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![License](https://img.shields.io/badge/License-Apache--2.0-yellow)
-![Platform](https://img.shields.io/badge/Platform-GitHub%20Codespaces-lightgrey)
-![Deploy](https://github.com/MRuhan17/Movie-Recommender/actions/workflows/deploy.yml/badge.svg)
+A fully structured, production-grade FastAPI backend for movie recommendations using Hybrid Machine Learning (Item-Item Collaborative Filtering + Content Fallback).
 
-A full-stack movie recommender system combining Collaborative Filtering (SVD) and Deep Learning embeddings.
-Developed in GitHub Codespaces, integrated with the TMDB API for real-world movie metadata.
+## 🏗 Architecture
 
-### 🧠 Features
-- Hybrid recommender engine (CF + Deep Embeddings)
-- TMDB API for live movie data
-- End-to-end ML pipeline: data → model → API → frontend
-- Deployable via Docker on Render & Vercel
+The system follows a **Layered Architecture**:
+1.  **API Layer** (`routers/`): Handles HTTP requests, authentication (JWT), and input validation (Pydantic).
+2.  **Service Layer** (Implicit in routers for simplicity, or explicit in `services/`): orchestrates logic.
+3.  **ML Engine** (`ml/`): Isolated component that loads pre-computed models (pickle) and serves predictions.
+4.  **Data Layer** (`models/`): SQLAlchemy ORM models mapping to PostgreSQL.
 
-### ⚙️ Stack
-Python • scikit-surprise • FastAPI • Next.js • Tailwind • TMDB API • Render • Vercel
+### ML Strategy: Hybrid Filtering
+*   **Collaborative Filtering (CF)**: Uses **Item-Item Cosine Similarity**. We compute a similarity matrix between movies based on user ratings. If User A likes "Inception", and "Inception" is similar to "Interstellar" (because other users rated both high), we recommend "Interstellar".
+*   **Cold Start**: If a user has no history or the model isn't trained, we fallback to **Popularity-based** (trending movies).
+*   **Offline Training**: `scripts/train_model.py` runs as a background job (cron) to fetch fresh SQL data, retrain the matrix, and save `model_data.pkl`.
 
-### 🗂️ Structure
+## 🗄 SQL Schema & Database
+
+We use **PostgreSQL**.
+*   **Users**: Identity & Auth.
+*   **Movies**: Metadata cache (Title, Overview, Genres).
+*   **Ratings**: Explicit 1-5 feedback. **Constraint**: Unique(user_id, movie_id).
+*   **WatchHistory**: Log of watched items (Implicit feedback).
+*   **MovieGenres**: Many-to-Many link.
+
+### Optimized SQL Query (Example: Trending)
+To get trending movies efficiently:
+```sql
+SELECT * FROM movies ORDER BY popularity DESC LIMIT 10;
 ```
-movie-recommender/
-├── backend/
-│   ├── __init__.py
-│   ├── app.py
-│   ├── recommender.py
-│   ├── tmdb_utils.py
-│   └── database.py
-├── data/
-│   ├── movies.csv
-│   ├── ratings.csv
-│   ├── links.csv
-│   └── tags.csv
-├── models/
-│   └── cf_model.pkl
-├── notebooks/
-│   ├── model_train.ipynb
-│   └── tmdb_test.ipynb
-├── .gitignore
-├── .env
-├── LICENSE
-├── README.md
-└── requirements.txt
+*   **Why**: We index the `popularity` column. This simple query avoids complex joins at runtime, as popularity is pre-calculated/updated during data ingestion.
+
+For History:
+```sql
+SELECT * FROM watch_history WHERE user_id = :uid ORDER BY watched_at DESC;
 ```
+*   **Why**: Index on `(user_id, watched_at)` makes retrieval O(log N) instead of scanning the whole table.
 
-### 🧩 Setup
+## 🚀 How to Run Locally
 
+### 1. Prerequisites
+*   Python 3.10+
+*   PostgreSQL running locally (or update .env)
+
+### 2. Setup
 ```bash
+# Install dependencies
 pip install -r requirements.txt
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Configure Environment
+# Create .env file with:
+DATABASE_URL=postgresql://user:password@localhost/movie_db
+SECRET_KEY=your_secret
 ```
 
-### 🚀 Deployment
-
-This project includes automated deployment via GitHub Actions:
-
-- **Backend**: Automatically deploys to Render when PRs are merged to main
-- **Frontend**: Automatically deploys to Vercel when PRs are merged to main
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions and configuration.
-
-### 📝 License
-Apache-2.0
-
-### ⚙️ Run in GitHub Codespaces
-1. Open the repo → **Code → Open with Codespaces**
-2. Wait for the dev container to build
-3. Run `pip install -r requirements.txt`
-4. Launch Jupyter with `jupyter notebook --ip=0.0.0.0 --port=8888`
-
-### 🎞️ App Preview
-
-**Personalized Movie Recommendations with Modern UI**
-
-The web app features a clean, responsive interface built with Next.js and Tailwind CSS:
-
-- **🎭 Home Dashboard**: Browse trending movies with TMDB posters and ratings
-- **🤖 Smart Recommendations**: Get personalized suggestions based on your viewing history
-- **🔍 Search & Filter**: Find movies by genre, year, or rating
-- **🎨 Movie Cards**: Beautiful cards showing poster, title, rating, and ML confidence score
-- **📊 Stats Dashboard**: Visualize your taste profile and model predictions
-
-**Tech Stack UI**:
+### 3. Run Backend
+```bash
+# From the root directory:
+uvicorn backend.app.main:app --reload
 ```
-Frontend: Next.js 14 + Tailwind CSS + Framer Motion
-Backend API: FastAPI + Uvicorn
-ML Engine: Scikit-surprise (CF) + PyTorch (Embeddings)
-Data Source: TMDB API (Live movie metadata + posters)
+Access docs at: `http://localhost:8000/docs`
+
+### 4. Train Model
+To generate the first model artifact (requires data in DB):
+```bash
+python -m backend.scripts.train_model
 ```
-
-*Note: Screenshots coming soon after Week 4 deployment* 🚀
-
-### 🌐 Vercel Deployment
-The application is deployed on Vercel. Ensure `TMDB_API_KEY` is set in the project settings for full functionality.
